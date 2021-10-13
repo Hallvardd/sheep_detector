@@ -294,8 +294,7 @@ class ImageConverter(tk.Tk):
         return img
 
 
-    def apply_transformation_matrix(self):
-    
+    def apply_transformation_matrix(self):    
         if self.org_image_ir is not None and self.td.has_transform():
             self.aligned_image_ir = self.org_image_ir.copy()
             self.aligned_image_ir = img_as_float(self.org_image_ir)
@@ -309,18 +308,24 @@ class ImageConverter(tk.Tk):
             print(self.aligned_image_ir.shape)
             #resized_img = cv2.resize(self.aligned_image_ir, (1200,900))
             #cv2.imshow(resized_img)
-            cv2.imwrite("test.png", self.aligned_image_ir)
+            cv2.imwrite("test_ir.png", self.aligned_image_ir)
             #cropping images and saving copy
             if self.org_image_bgr is not None and self.org_image_ir is not None:
+                cv2.imwrite("test_rgb.png", self.org_image_bgr)
                 center =(self.org_image_bgr.shape[0]/2, self.org_image_bgr.shape[1]/2)
-                h = 2400
-                w = 3600
+                h = 2200
+                w = 3300
+                #x_l = center[1] - w/2
+                #x_r = center[1] - w/2
+                #y_l = center[0] - h/2
+                #y_r = center[0] - h/2
                 x = center[1] - w/2
                 y = center[0] - h/2
                 cropped_bgr = self.org_image_bgr[int(y):int(y+h), int(x):int(x+w)]
                 cropped_ir = self.aligned_image_ir[int(y):int(y+h), int(x):int(x+w)]
-                cv2.imwrite("cropped_rgb.png", cropped_bgr)
-                cv2.imwrite("cropped_ir.png", cropped_ir)
+                #cv2.imwrite("cropped_rgb.png", cropped_bgr)
+                #cv2.imwrite("cropped_ir.png", cropped_ir)
+                
             # updating the display
             self.resize_images()
             self.redraw_images()
