@@ -20,7 +20,7 @@ class ImageConverter(tk.Tk):
         self.minsize(1500,844)
         self.geometry("1500x844")
         self.update()
-        
+
         self.bind("<Configure>", self.schedule_resize)
 
         self.td = TransformationData()
@@ -38,23 +38,23 @@ class ImageConverter(tk.Tk):
         self.org_pillow_image_ir = None
         self.pillow_alligned_image_ir = None
 
-        # pannel images 
+        # pannel images
         self.panel_rgb = None
         self.panel_ir = None
 
         #transformation matrix for using with multiple pictures
         self.t_matrix = None
-        
+
         # create a button, then when pressed, will trsigger a file chooser
         # dialog and allow the user to select an input image; then add the
 
         # BUTTONS
         # BUTTONS
-        
+
         # Choose RGB picture
         self.btn_rgb = tk.Button(self, text="Select RGB image", command=self.select_rgb_image)
         self.btn_rgb.grid(row = 1, column=0, padx="10", pady="2", sticky = tk.N)
-        
+
         # Choose IR picture
         self.btn_ir = tk.Button(self, text="Select IR image", command=self.select_ir_image)
         self.btn_ir.grid(row = 3, column=0, padx="10", pady="2", sticky = tk.S)
@@ -95,7 +95,7 @@ class ImageConverter(tk.Tk):
 
         ## IMAGES
         ## IMAGES
-        
+
         image_height = int(self.winfo_height()*0.4)
         image_width = int(image_height*self.image_aspect_ratio)
         self.temp_image = Image.new('RGB', (image_width, image_height))
@@ -112,7 +112,7 @@ class ImageConverter(tk.Tk):
         self.panel_rgb.image = self.image_rgb
         self.panel_rgb.bind("<Button-1>", self.mouse_click_rgb)
         self.panel_rgb.grid(row = 0, column=0, pady=(5,0), padx=(5,0), sticky = tk.NW)
-        
+
         # IR image
         self.image_ir = ImageTk.PhotoImage(self.temp_image, master=self)
         self.panel_ir = tk.Label(image=self.image_ir, borderwidth=0, cursor="tcross")
@@ -120,7 +120,7 @@ class ImageConverter(tk.Tk):
         self.panel_ir.bind("<Button-1>", self.mouse_click_ir)
         self.panel_ir.grid(row = 2, column=0, padx=(5,0), sticky = tk.SW)
 
-        
+
     def mouse_click_ir(self, event):
         print("clicked at", event.x, event.y)
         print(event.x/self.image_ir.width(), event.y/self.image_ir.height())
@@ -133,7 +133,7 @@ class ImageConverter(tk.Tk):
 
         self.resize_images()
         self.redraw_images()
-        
+
     def mouse_click_rgb(self, event):
         print("clicked at", event.x, event.y)
         print(event.x/self.image_rgb.width(), event.y/self.image_rgb.height())
@@ -143,7 +143,7 @@ class ImageConverter(tk.Tk):
             x = event.x/self.image_rgb.width()
             y = event.y/self.image_rgb.height()
             self.td.add_rgb_point((x,y))
-            
+
         self.resize_images()
         self.redraw_images()
 
@@ -176,7 +176,7 @@ class ImageConverter(tk.Tk):
             # zeroing out the marked points
             #self.alignment_points_ir = []
             #self.undo_history = [point for point in self.undo_history if point != "ir"]
-    
+
     def select_rgb_image(self):
         path = filedialog.askopenfilename()
         # ensure a file path was selected
@@ -208,24 +208,24 @@ class ImageConverter(tk.Tk):
             self.after_cancel(self._after_id)
         self._after_id = self.after(100, self.resize)
 
-        
+
     def resize(self):
         #enforcing the aspect ratio
         if self.winfo_width()/self.winfo_height() < self.window_aspect_ratio:
             self.geometry(f"{int(self.winfo_height()*self.window_aspect_ratio)}x{int(self.winfo_height())}")
         else:
             self.geometry(f"{int(self.winfo_width())}x{int(self.winfo_width()/self.window_aspect_ratio)}")
-            
+
         self.resize_images()
         self.redraw_images()
 
     def resize_images(self):
         window_height = self.winfo_height()
         window_width  = self.winfo_width()
-        
+
         image_height = int((window_height/2.0)*0.9)
         image_width  = int(image_height*self.image_aspect_ratio)
-        
+
         if self.org_pillow_image_rgb is not None:
             # scaling the image
             self.image_rgb = self.org_pillow_image_rgb.resize((image_width, image_height))
@@ -236,7 +236,7 @@ class ImageConverter(tk.Tk):
         else:
             self.image_rgb = self.temp_image.resize((image_width, image_height))
             self.image_rgb = ImageTk.PhotoImage(self.image_rgb)
-            
+
         if self.org_pillow_image_ir is not None:
             # resizing the original image
             self.image_ir = self.org_pillow_image_ir.resize((image_width, image_height))
@@ -245,7 +245,7 @@ class ImageConverter(tk.Tk):
         else:
             self.image_ir = self.temp_image.resize((image_width, image_height))
             self.image_ir = ImageTk.PhotoImage(self.image_ir)
-            
+
         if self.image_joined is not None:
             # calculating space available for the image
             image_xpos = self.panel_joined.winfo_x()
@@ -265,7 +265,7 @@ class ImageConverter(tk.Tk):
             else:
                 self.image_joined = self.temp_image.resize((image_width, image_height))
                 self.image_joined = ImageTk.PhotoImage(self.image_joined)
-        
+
     def redraw_images(self):
         # ir picture
         self.panel_ir.configure(image=self.image_ir)
@@ -276,7 +276,7 @@ class ImageConverter(tk.Tk):
         # joined picture
         self.panel_joined.configure(image=self.image_joined)
         self.panel_joined.image = self.image_joined
-        
+
     def mark_points(self, img:Image, points, color: str = "red") -> Image:
         index_list = [(int(p[0]*img.size[0]), int(p[1]*img.size[1])) for p in points]
         color = ImageColor.getrgb(color)
@@ -294,7 +294,7 @@ class ImageConverter(tk.Tk):
         return img
 
 
-    def apply_transformation_matrix(self):    
+    def apply_transformation_matrix(self):
         if self.org_image_ir is not None and self.td.has_transform():
             self.aligned_image_ir = self.org_image_ir.copy()
             self.aligned_image_ir = img_as_float(self.org_image_ir)
@@ -323,14 +323,17 @@ class ImageConverter(tk.Tk):
                 y = center[0] - h/2
                 cropped_bgr = self.org_image_bgr[int(y):int(y+h), int(x):int(x+w)]
                 cropped_ir = self.aligned_image_ir[int(y):int(y+h), int(x):int(x+w)]
+
                 #cv2.imwrite("cropped_rgb.png", cropped_bgr)
                 #cv2.imwrite("cropped_ir.png", cropped_ir)
-                
+                blended_img = np.maximum(self.org_image_bgr, self.aligned_image_ir)
+                cv2.imwrite("blended.png", blended_img)
+
             # updating the display
             self.resize_images()
             self.redraw_images()
 
-    def generate_transformation_matrix(self): 
+    def generate_transformation_matrix(self):
         if self.org_image_bgr is not None and self.org_image_ir is not None:
             self.td.generate_transformation_matrix(self.org_image_bgr.shape,
                                                    self.org_image_ir.shape,
@@ -362,7 +365,7 @@ class ImageConverter(tk.Tk):
                     pickle.dump(self.td, handle, protocol=pickle.HIGHEST_PROTOCOL)
         else:
             print("TransformationData object has no generated transform.")
-            
+
 
     def load_transform(self):
         path = filedialog.askopenfilename()
@@ -379,12 +382,12 @@ class ImageConverter(tk.Tk):
         else:
             with open(path, 'rb') as handle:
                 self.td = pickle.load(handle)
-        
+
     def run(self):
         # kick off the GUI
         self.mainloop()
 
-# Defining a transformation datatype for pickling 
+# Defining a transformation datatype for pickling
 class TransformationData():
     def __init__(self):
         self.rgb_points = []
@@ -394,7 +397,7 @@ class TransformationData():
 
     def has_transform(self):
         return self.transform is not None
-    
+
     def undo_point(self):
         command = "na"
         if len(self.undo_history) > 0:
@@ -433,7 +436,7 @@ class TransformationData():
 
     def get_rgb_points(self):
         return self.rgb_points
-        
+
     def get_ir_points(self):
         return self.ir_points
 
@@ -443,7 +446,7 @@ class TransformationData():
     def generate_transformation_matrix(self, image_shape_rgb, image_shape_ir, transform_type:str):
         indices_rgb = []
         indices_ir  = []
-        
+
         if len(self.rgb_points) != len(self.ir_points):
             print("Error: pictures needs to have the same amount of points!")
         else:
@@ -463,9 +466,7 @@ class TransformationData():
 
             # find transformation matrix
             self.transform = transform.estimate_transform(transform_type, indices_rgb, indices_ir)
-    
 
 if __name__ == "__main__":
     im = ImageConverter()
     im.run()
-    
