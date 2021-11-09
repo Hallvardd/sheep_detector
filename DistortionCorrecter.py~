@@ -1,0 +1,81 @@
+import cv2
+import numpy as np
+import math
+from vcam import vcam,meshGen
+
+
+
+class DistortionCorrecter:
+    def __init__(self, _path='../calibration img/DJI_0738.JPG'):
+        self.path = _path
+        self.keep = False
+        self.WINDOW_NAME = "output"
+
+    def correct(self):
+        cv2.namedWindow(self.WINDOW_NAME,cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(self.WINDOW_NAME,700,700)
+
+        # Creating the tracker bar for all the features
+        cv2.createTrackbar("K1",self.WINDOW_NAME,1000,2000,lambda x: None)
+        cv2.createTrackbar("K2",self.WINDOW_NAME,1000,2000,lambda x: None)
+        cv2.createTrackbar("P1",self.WINDOW_NAME,1000,2000,lambda x: None)
+        cv2.createTrackbar("P2",self.WINDOW_NAME,1000,2000,lambda x: None)
+        # cap = cv2.VideoCapture(0)
+        # ret,img = cap.read()
+        img = cv2.imread(self.path)
+        H,W = img.shape[:2]
+
+        c1 = vcam(H=H,W=W)
+        plane = meshGen(H,W)
+
+        plane.Z = plane.X*0 + 1
+
+        pts3d = plane.getPlane()
+
+        while True:
+            # ret, img = cap.read()
+            img = cv2.imread(self.path)
+            X = 0
+            Y = 0
+            Z = 75
+            alpha = 0
+            beta = 0
+            gamma = 0
+            k1 = (cv2.getTrackbarPos("K1", self.WINDOW_NAME) - 1000)/100000
+            k2 = (cv2.getTrackbarPos("K2", self.WINDOW_NAME) - 1000)/1000000
+            p1 = (cv2.getTrackbarPos("P1", self.WINDOW_NAME) - 1000)/100000
+            p2 = (cv2.getTrackbarPos("P2", self.WINDOW_NAME) - 1000)/100000
+            c1.KpCoeff[0] = k1
+            c1.KpCoeff[1] = k2
+            c1.KpCoeff[2] = p1
+            c1.KpCoeff[3] = p2
+
+            c1.set_tvec(X,Y,Z)
+            c1.set_rvec(alpha,beta,gamma)
+            pts2d = c1.project(pts3d)
+            map_x,map_y = c1.getMaps(pts2d)
+            output = cv2.remap(img,map_x,map_y,interpolation=cv2.INTER_LINEAR)
+
+            cv2.imshow("output", output)
+            #M = c1.RT
+            #print("\n\n############## Camera Matrix ##################")
+            choice = cv2.waitKey(1)
+            if choice & 0xFF == ord('q'):
+                self.keep = False
+                cv2.destroyAllWindows()
+                break
+            if choice & 0xFF == ord('s'):
+                self.keep = True
+                cv2.destroyAllWindows()
+                break
+
+        if self.keep:
+            return output
+        else:
+            return img
+
+dc = DistortionCorrecter()
+result = dc.correct()
+
+cv2.imshow("result", result)
+cv2.waitKey(0)

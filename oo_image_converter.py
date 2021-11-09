@@ -6,9 +6,10 @@ import numpy as np
 from skimage import transform
 from skimage.util import img_as_float, img_as_ubyte
 import tkinter as tk
-import time 
+import time
 from tkinter import filedialog
 from functools import partial
+from DistortionCorrecter import distortion_correcter
 import pickle
 
 class ImageConverter(tk.Tk):
@@ -80,7 +81,7 @@ class ImageConverter(tk.Tk):
         # Generate Transform matrix
         self.btn_generate_t_matrix = tk.Button(self, text="Create Transform", command=self.generate_transformation_matrix)
         self.btn_generate_t_matrix.grid(row=3, column=3, padx="10", pady="2", sticky = tk.SE)
-        
+
         # Save Transform Button
         self.btn_save_transform = tk.Button(self, text="Save Transform", command=self.save_transform)
         self.btn_save_transform.grid(row=3, column=4, padx="10", pady="2", sticky = tk.SW)
@@ -153,7 +154,7 @@ class ImageConverter(tk.Tk):
         if len(path) > 0:
             # load the image from disk, convert it to grayscale, and detect
             # edges in it
-            self.org_image_ir = cv2.imread(path)
+            self.org_image_ir = distortion_correcter(path)
             # OpenCV represents images in BGR order; however PIL represents
             # images in RGB order, so we need to swap the channels
             self.org_pillow_image_ir = cv2.cvtColor(self.org_image_ir, cv2.COLOR_BGR2RGB)
