@@ -46,7 +46,7 @@ class vcam:
         self.R = np.matmul(Rx, np.matmul(Ry, Rz))
 
         self.K = np.array([[-self.focus/self.sx,self.sh,self.ox],
-                           [0,self.focus/self.sy,self.oy],
+                           [0,-self.focus/self.sy,self.oy],
                            [0,0,1]])
 
         self.M1 = np.array([[1,0,0,-self.Tx],

@@ -1,0 +1,5 @@
+import numpy as np
+import cv2
+
+img_1 = imread('../')
+img_2 = imread('../')

@@ -32,7 +32,7 @@ class ImageConverter(tk.Tk):
         self.org_image_bgr = None
         self.org_image_ir = None
         #transformed images
-        self.alinged_image_bgr = None
+        self.undistorted_image_ir = None
         self.aligned_image_ir = None
         # the original image for resizing and manipulation
         self.org_pillow_image_rgb = None
@@ -93,7 +93,6 @@ class ImageConverter(tk.Tk):
         self.btn_apply_t_matrix = tk.Button(self, text="Apply Transform", command=self.apply_transformation_matrix)
         self.btn_apply_t_matrix.grid(row=3, column=5, padx="10", pady="2", sticky = tk.SE)
 
-
         ## IMAGES
         ## IMAGES
 
@@ -127,7 +126,7 @@ class ImageConverter(tk.Tk):
         print(event.x/self.image_ir.width(), event.y/self.image_ir.height())
 
         # The size of the image varies the x and y coordinates should be saved in the list as floats [0.0, 1.0]
-        if self.org_image_ir is not None:
+        if self.undistorted_image_ir is not None:
             x = event.x/self.image_ir.width()
             y = event.y/self.image_ir.height()
             self.td.add_ir_point((x,y))
@@ -154,10 +153,17 @@ class ImageConverter(tk.Tk):
         if len(path) > 0:
             # load the image from disk, convert it to grayscale, and detect
             # edges in it
-            self.org_image_ir = distortion_correcter(path)
+            self.org_image_ir = cv2.imread(path)
+            if self.td.map_x is None or self.td.map_y is None:
+                self.td.map_x, self.td.map_y = distortion_correcter(self.org_image_ir)
+            if self.td.map_x is not None or self.td.map_y is not None:
+                self.undistorted_image_ir = cv2.remap(self.org_image_ir, self.td.map_x,self.td.map_y,interpolation=cv2.INTER_LINEAR)
+            else:
+                print("map_x and map_y not available")
+                self.undistorted_image_ir = self.org_image_ir
             # OpenCV represents images in BGR order; however PIL represents
             # images in RGB order, so we need to swap the channels
-            self.org_pillow_image_ir = cv2.cvtColor(self.org_image_ir, cv2.COLOR_BGR2RGB)
+            self.org_pillow_image_ir = cv2.cvtColor(self.undistorted_image_ir, cv2.COLOR_BGR2RGB)
             self.org_pillow_image_ir = Image.fromarray(self.org_pillow_image_ir)
             # finding the image dimentions
             factor = 1.0
@@ -285,6 +291,7 @@ class ImageConverter(tk.Tk):
             for j in range(2):
                 for k in range(2):
                     if i[0] + j < img.size[0] and i[1] + k < img.size[1]:
+
                         img.putpixel((i[0] + j, i[1] + k), color)
                     if i[0] + j < img.size[0] and i[1] - k > 0:
                         img.putpixel((i[0] + j, i[1] - k), color)
@@ -296,9 +303,9 @@ class ImageConverter(tk.Tk):
 
 
     def apply_transformation_matrix(self):
-        if self.org_image_ir is not None and self.td.has_transform():
-            self.aligned_image_ir = self.org_image_ir.copy()
-            self.aligned_image_ir = img_as_float(self.org_image_ir)
+        if self.undistorted_image_ir is not None and self.td.has_transform():
+            self.aligned_image_ir = self.undistorted_image_ir.copy()
+            self.aligned_image_ir = img_as_float(self.undistorted_image_ir)
             self.aligned_image_ir = transform.warp(self.aligned_image_ir,
                                                    self.td.get_transform(),
                                                    output_shape = self.org_image_bgr.shape)
@@ -311,22 +318,20 @@ class ImageConverter(tk.Tk):
             #cv2.imshow(resized_img)
             cv2.imwrite("test_ir.png", self.aligned_image_ir)
             #cropping images and saving copy
-            if self.org_image_bgr is not None and self.org_image_ir is not None:
+            if self.org_image_bgr is not None and self.undistorted_image_ir is not None:
                 cv2.imwrite("test_rgb.png", self.org_image_bgr)
                 center =(self.org_image_bgr.shape[0]/2, self.org_image_bgr.shape[1]/2)
-                h = 2200
-                w = 3300
-                #x_l = center[1] - w/2
-                #x_r = center[1] - w/2
-                #y_l = center[0] - h/2
-                #y_r = center[0] - h/2
-                x = center[1] - w/2
-                y = center[0] - h/2
+                h = 2400
+                w = 3200
+                x_shift = 60
+                y_shift = -120
+                x = center[1] - w/2 + x_shift
+                y = center[0] - h/2 + y_shift
                 cropped_bgr = self.org_image_bgr[int(y):int(y+h), int(x):int(x+w)]
                 cropped_ir = self.aligned_image_ir[int(y):int(y+h), int(x):int(x+w)]
 
-                #cv2.imwrite("cropped_rgb.png", cropped_bgr)
-                #cv2.imwrite("cropped_ir.png", cropped_ir)
+                cv2.imwrite("cropped_rgb.png", cropped_bgr)
+                cv2.imwrite("cropped_ir.png", cropped_ir)
                 blended_img = np.maximum(self.org_image_bgr, self.aligned_image_ir)
                 cv2.imwrite("blended.png", blended_img)
 
@@ -335,9 +340,9 @@ class ImageConverter(tk.Tk):
             self.redraw_images()
 
     def generate_transformation_matrix(self):
-        if self.org_image_bgr is not None and self.org_image_ir is not None:
+        if self.org_image_bgr is not None and self.undistorted_image_ir is not None:
             self.td.generate_transformation_matrix(self.org_image_bgr.shape,
-                                                   self.org_image_ir.shape,
+                                                   self.undistorted_image_ir.shape,
                                                    self.t_type.get())
     def undo_point(self):
         self.td.undo_point()
@@ -395,6 +400,8 @@ class TransformationData():
         self.ir_points = []
         self.undo_history = []
         self.transform = None
+        self.map_x = None
+        self.map_y = None
 
     def has_transform(self):
         return self.transform is not None

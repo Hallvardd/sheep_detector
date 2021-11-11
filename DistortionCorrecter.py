@@ -65,9 +65,7 @@ class DistortionCorrecter:
             return img
 """
 
-def distortion_correcter(_path='../calibration img/DJI_0738.JPG'):
-    path = _path
-    keep = False
+def distortion_correcter(_img):
     WINDOW_NAME = "output"
 
     cv2.namedWindow(WINDOW_NAME,cv2.WINDOW_NORMAL)
@@ -79,7 +77,9 @@ def distortion_correcter(_path='../calibration img/DJI_0738.JPG'):
 
     # cap = cv2.VideoCapture(0)
     # ret,img = cap.read()
-    img = cv2.imread(path)
+    img = _img
+    keep = False
+
     H,W = img.shape[:2]
 
     c1 = vcam(H=H,W=W)
@@ -90,7 +90,7 @@ def distortion_correcter(_path='../calibration img/DJI_0738.JPG'):
 
     while True:
         # ret, img = cap.read()
-        img = cv2.imread(path)
+        img = _img
         X = 0
         Y = 0
         Z = 75
@@ -117,9 +117,9 @@ def distortion_correcter(_path='../calibration img/DJI_0738.JPG'):
             break
 
     if keep:
-        return output
+        return map_x, map_y
     else:
-        return img
+        return None, None
 
 
 #dc = DistortionCorrecter()
