@@ -4,7 +4,6 @@ import math
 from vcam import vcam,meshGen
 
 """
-
 class DistortionCorrecter:
     def __init__(self, _path='../calibration img/DJI_0738.JPG'):
         self.path = _path
@@ -72,8 +71,8 @@ def distortion_correcter(_img):
     cv2.resizeWindow(WINDOW_NAME,700,700)
 
     # Creating the tracker bar for all the features
-    cv2.createTrackbar("K1",WINDOW_NAME,1000,2000,lambda x: None)
-    cv2.createTrackbar("K2",WINDOW_NAME,1000,2000,lambda x: None)
+    cv2.createTrackbar("K1",WINDOW_NAME, 1000, 2000,lambda x: None)
+    cv2.createTrackbar("K2",WINDOW_NAME, 1000, 2000,lambda x: None)
 
     # cap = cv2.VideoCapture(0)
     # ret,img = cap.read()
@@ -122,8 +121,11 @@ def distortion_correcter(_img):
         return None, None
 
 
-#dc = DistortionCorrecter()
-#result = distortion_correct()
+path = 'calibration_img/DJI_0738.JPG'
+path_2 = 'calibrate.JPG'
+img = cv2.imread(path)
 
-#cv2.imshow("result", result)
-#cv2.waitKey(0)
+result = distortion_correcter(img)
+
+cv2.imshow("result", result)
+cv2.waitKey(0)
