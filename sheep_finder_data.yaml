@@ -1,0 +1,12 @@
+train: ../sheep_network/data/images/train/ 
+val:  ../sheep_network/data/images/val/
+test: ../sheep_network/data/images/test/
+
+# number of classes
+nc: 4
+
+# class names
+names: ["black sheep","brown sheep", "grey sheep", "white sheep"]
+
+# to run
+# python train.py --img 1280 --cfg yolov5s.yaml --hyp hyp.scratch.yaml --batch 32 --epochs 100 --data sheep_finder_data.yaml --weights yolov5s.pt --workers 24 --name yolo_sheep_finder
