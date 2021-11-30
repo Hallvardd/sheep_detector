@@ -155,12 +155,12 @@ class ImageConverter(tk.Tk):
             # load the image from disk, convert it to grayscale, and detect
             # edges in it
             self.org_image_ir = cv2.imread(path)
-            if self.td.map_x is None or self.td.map_y is None:
-                self.td.map_x, self.td.map_y = distortion_correcter(self.org_image_ir)
-            if self.td.map_x is not None or self.td.map_y is not None:
-                self.undistorted_image_ir = cv2.remap(self.org_image_ir, self.td.map_x,self.td.map_y,interpolation=cv2.INTER_LINEAR)
+            if self.td.xmap is None or self.td.ymap is None:
+                self.td.xmap, self.td.ymap = distortion_correcter(self.org_image_ir)
+            if self.td.xmap is not None or self.td.ymap is not None:
+                self.undistorted_image_ir = cv2.remap(self.org_image_ir, self.td.xmap,self.td.ymap,interpolation=cv2.INTER_LINEAR)
             else:
-                print("map_x and map_y not available")
+                print("xmap and ymap not available")
                 self.undistorted_image_ir = self.org_image_ir
             # OpenCV represents images in BGR order; however PIL represents
             # images in RGB order, so we need to swap the channels

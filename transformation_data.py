@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from skimage import transform
 
 # Defining a transformation datatype for pickling
 class TransformationData():
@@ -8,8 +9,10 @@ class TransformationData():
         self.ir_points = []
         self.undo_history = []
         self.transform = None
-        self.map_x = None
-        self.map_y = None
+        self.target_size = None
+        self.xmap = None
+        self.ymap = None
+        self.roi = [None,None,None,None]
 
     def has_transform(self):
         return self.transform is not None

@@ -121,11 +121,11 @@ def distortion_correcter(_img):
         return None, None
 
 
-path = 'calibration_img/DJI_0738.JPG'
-path_2 = 'calibrate.JPG'
-img = cv2.imread(path)
+#path = 'calibration_img/DJI_0738.JPG'
+#path_2 = 'calibrate.JPG'
+#img = cv2.imread(path)
 
-result = distortion_correcter(img)
+#result = distortion_correcter(img)
 
-cv2.imshow("result", result)
-cv2.waitKey(0)
+#cv2.imshow("result", result)
+#cv2.waitKey(0)

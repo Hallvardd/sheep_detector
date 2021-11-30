@@ -2,6 +2,14 @@ import cv2
 import numpy as np
 import math
 
+
+"""
+
+Cite the sources here:
+
+
+"""
+
 class vcam:
     def __init__(self,H=400,W=400):
         """
@@ -113,7 +121,7 @@ class vcam:
         x = pts1.reshape(self.H,self.W)
         y = pts2.reshape(self.H,self.W)
 
-        return x.astype(np.float32),y.astype(np.float32)
+        return x.astype(np.float32), y.astype(np.float32)
 
 
 class meshGen:
